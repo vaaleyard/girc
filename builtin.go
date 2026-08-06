@@ -501,8 +501,9 @@ func handleNAMES(c *Client, e Event) {
 	var s *Source
 
 	c.state.Lock()
+	_, prefixes := parsePrefixes(c.state.userPrefixes())
 	for i := 0; i < len(parts); i++ {
-		modes, nick, ok = parseUserPrefix(parts[i])
+		modes, nick, ok = parseUserPrefix(parts[i], prefixes)
 		if !ok {
 			continue
 		}

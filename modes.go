@@ -528,14 +528,12 @@ func (m *Perms) setFromMode(mode CMode) {
 	}
 }
 
-// parseUserPrefix parses a raw mode line, like "@user" or "@+user".
-func parseUserPrefix(raw string) (modes, nick string, success bool) {
+// parseUserPrefix parses a raw mode line, like "@user" or "@+user", using
+// the prefix symbols advertised by the server via ISUPPORT.
+func parseUserPrefix(raw, prefixes string) (modes, nick string, success bool) {
 	for i := 0; i < len(raw); i++ {
-		char := string(raw[i])
-
-		if char == OwnerPrefix || char == AdminPrefix || char == HalfOperatorPrefix ||
-			char == OperatorPrefix || char == VoicePrefix {
-			modes += char
+		if strings.IndexByte(prefixes, raw[i]) > -1 {
+			modes += string(raw[i])
 			continue
 		}
 

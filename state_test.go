@@ -30,13 +30,13 @@ const mockConnStartState = `:dummy.int NOTICE * :*** Looking up your hostname...
 :dummy.int NOTICE * :*** Found your hostname
 :dummy.int NOTICE * :*** No Ident response
 :dummy.int 001 nick :Welcome to the DUMMY Internet Relay Chat Network nick
-:dummy.int 005 nick NETWORK=DummyIRC NICKLEN=20 :are supported by this server
+:dummy.int 005 nick NETWORK=DummyIRC NICKLEN=20 PREFIX=(qaohv)!&@%+ :are supported by this server
 :dummy.int 375 nick :- dummy.int Message of the Day -
 :dummy.int 372 nick :example motd
 :dummy.int 376 nick :End of /MOTD command.
 :nick!~user@local.int JOIN #channel * :realname
 :dummy.int 332 nick #channel :example topic
-:dummy.int 353 nick = #channel :nick!~user@local.int @nick2!nick2@other.int
+:dummy.int 353 nick = #channel :nick!~user@local.int @nick2!nick2@other.int !founder!founder@other.int
 :dummy.int 366 nick #channel :End of /NAMES list.
 :dummy.int 354 nick 1 #channel ~user local.int nick 0 :realname
 :dummy.int 354 nick 1 #channel nick2 other.int nick2 nick2 :realname2
@@ -52,6 +52,7 @@ const mockConnStartState = `:dummy.int NOTICE * :*** Looking up your hostname...
 `
 
 const mockConnEndState = `:nick2!nick2@other.int QUIT :example reason
+:founder!founder@other.int QUIT :example reason
 :nick!~user@local.int PART #channel2 :example reason
 :nick!~user@local.int NICK newnick
 `
@@ -86,9 +87,9 @@ func TestState(t *testing.T) {
 		users := c.UserList()
 		channels := c.ChannelList()
 
-		if !reflect.DeepEqual(users, []string{"nick", "nick2"}) {
+		if !reflect.DeepEqual(users, []string{"founder", "nick", "nick2"}) {
 			// This could fail too, if sorting isn't occurring.
-			t.Fatalf("got state users %#v, wanted: %#v", users, []string{"nick", "nick2"})
+			t.Fatalf("got state users %#v, wanted: %#v", users, []string{"founder", "nick", "nick2"})
 		}
 
 		if !reflect.DeepEqual(channels, []string{"#channel", "#channel2"}) {
@@ -142,8 +143,12 @@ func TestState(t *testing.T) {
 			t.Fatalf("Channel.UserIn == %t, want %t", in, true)
 		}
 
-		if users := ch.Users(c); len(users) != 2 {
-			t.Fatalf("Channel.Users == %#v, wanted length of 2", users)
+		if in := ch.UserIn("founder"); !in {
+			t.Fatalf("Channel.UserIn == %t for advertised prefix, want %t", in, true)
+		}
+
+		if users := ch.Users(c); len(users) != 3 {
+			t.Fatalf("Channel.Users == %#v, wanted length of 3", users)
 		}
 
 		if h := c.GetHost(); h != "local.int" {
