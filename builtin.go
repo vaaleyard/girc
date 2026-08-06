@@ -174,12 +174,12 @@ func handleJOIN(c *Client, e Event) {
 	if e.Source.ID() == c.GetID() {
 		// If it's us, don't just add our user to the list. Run a WHO which
 		// will tell us who exactly is in the entire channel.
-		if !c.Config.DisableAutoWhoOnJoin {
+		if !c.Config.DisableAutoWHOOnJoin {
 			c.Send(&Event{Command: WHO, Params: []string{channelName, "%tacuhnr,1"}})
 		}
 
 		// Also send a MODE to obtain the list of channel modes.
-		if !c.Config.DisableAutoModeOnJoin {
+		if !c.Config.DisableAutoMODEOnJoin {
 			c.Send(&Event{Command: MODE, Params: []string{channelName}})
 		}
 
